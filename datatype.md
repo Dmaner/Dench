@@ -5,53 +5,60 @@
 ## 目录
 
 - [数据类型](#数据类型)
-  - [目录](#目录)
-  - [关系型数据](#关系型数据)
-    - [Customer](#customer)
-    - [Vender](#vender)
-  - [KV型数据](#kv型数据)
-    - [Feedback](#feedback)
-  - [XML数据](#xml数据)
-    - [Invoice](#invoice)
-  - [Json类型数据](#json类型数据)
-    - [Order](#order)
-    - [Product](#product)
-  - [图数据](#图数据)
-    - [PersonInterestProduct](#personinterestproduct)
-    - [PersonKnowPerson](#personknowperson)
+	- [目录](#目录)
+	- [关系型数据](#关系型数据)
+		- [Customer](#customer)
+		- [Vender](#vender)
+	- [KV型数据](#kv型数据)
+		- [Feedback](#feedback)
+	- [XML数据](#xml数据)
+		- [Invoice](#invoice)
+	- [Json类型数据](#json类型数据)
+		- [Order](#order)
+		- [Product](#product)
+	- [图数据](#图数据)
+		- [PersonInterestProduct](#personinterestproduct)
+		- [PersonKnowPerson](#personknowperson)
 
 ## 关系型数据
 
 ### Customer
 
-```
-id, 
-firstName, 
-lastName, 
-gender(性别),
-birthday, 
-creationDate, 
-locationIP, 
-browserUsed(使用浏览器), 
-place
+```golang
+type Customer struct {
+	id          uint64
+	fristname   string
+	lastname    string
+	gender      string
+	birthday    time.Time
+	locationIP  string
+	browserUsed string
+	place       string
+	job         string
+}
 ```
 
 ### Vender
 
-```
-id,
-Country,
-Industry
+```golang
+type Vender struct {
+	id      uint64
+	country string
+	company string
+}
 ```
 
 ## KV型数据
 
 ### Feedback
 
-```
-asin(亚马逊商品id),
-PersonId,
-feedback(评价)
+```golang
+type FeedBack struct {
+	productId uint64
+	personId  uint64
+	star      float64 	`评分`
+	comment   string	`用户评价`
+}
 ```
 
 ## XML数据
@@ -75,33 +82,24 @@ feedback(评价)
 
 ### Order
 
-```json
-{
-    "OrderId": "016f6a4a-ec18-4885-b1c7-9bf2306c76d6",
-    "PersonId": "10995116278711",
-    "OrderDate": "2022-09-01",
-    "TotalPrice": 723.88,
-    "Orderline": [
-        {
-            "productId": "6465",
-            "asin": "B000FIE4WC",
-            "title": "Topeak Dual Touch Bike Storage Stand",
-            "price": 199.95,
-            "brand": "MYLAPS_Sports_Timing"
-        },
-    ]
+```golang
+type Order struct {
+	id           uint64
+	creationdate time.Time
+	totalprice   uint64
+	orderline    []*Product
 }
 ```
 
 ### Product 
 
-```
-asin,
-title,
-price,
-imgUrl,
-productId,
-brand
+```golang
+type Product struct {
+	id    uint64
+	info  string
+	price float64
+	brand *Vender
+}
 ```
 
 ## 图数据
