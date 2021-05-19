@@ -21,7 +21,6 @@ func New(seed int64) *Faker {
 }
 
 // Common
-
 func RangeIntGen(r *rand.Rand, min int64, max int64) int64 {
 	if min >= max {
 		return min
@@ -111,4 +110,14 @@ func (f *Faker) GenFeedBack(proid uint64, perid uint64) *FeedBack {
 // Order
 func GenOrder(id uint64, t time.Time, count uint64) *Order {
 	return order(id, t, count)
+}
+
+// Person interested in product
+func (f *Faker) GenCinP(pe, pr uint64) *CinP {
+	return cinp(f.Rand, pe, pr)
+}
+
+// Person know person
+func (f *Faker) GenPKnowP(pf, pt uint64) *PKonwP {
+	return pknowp(f.Rand, pf, pt)
 }
