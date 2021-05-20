@@ -13,4 +13,5 @@ func main() {
 	fmt.Println(c)
 	fmt.Println(v)
 	fmt.Println(p)
+	f.StepOne(0, 100)
 }

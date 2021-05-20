@@ -110,16 +110,22 @@ Customer -- PersonKnowPerson -- > Customer
 
 ### PersonInterestProduct
 
-```
-Person.id,
-Product.id
-IntersetValue
+```golang
+// Customer insterest product
+type CinP struct {
+	PersonId      uint64
+	ProductId     uint64
+	IntersetValue uint8
+}
 ```
 
 ### PersonKnowPerson
 
-```
-from,
-to,
-creationDate
+```golang
+// Person know Person
+type PKonwP struct {
+	Personfrom   uint64
+	Personto     uint64
+	Creationdate time.Time
+}
 ```
