@@ -2,16 +2,10 @@ package main
 
 import (
 	"Dbench/gen"
-	"fmt"
 )
 
 func main() {
 	var f *gen.Faker = gen.New(2)
-	var c *gen.Customer = f.GenCustomer(1)
-	var v *gen.Vender = f.GenVender(1)
-	var p *gen.Product = f.GenProduct(1, v)
-	fmt.Println(c)
-	fmt.Println(v)
-	fmt.Println(p)
-	f.StepOne(0, 100)
+	var config *gen.MetaConfig = gen.MetaConfigGen(1000)
+	f.InitMetaData(config)
 }

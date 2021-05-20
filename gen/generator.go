@@ -10,10 +10,6 @@ import (
 	"unicode"
 )
 
-// params
-const bytesPerWordEstimation = 6
-const venderperproduct = 10
-
 // random generator
 type Faker struct {
 	Rand *rand.Rand
@@ -119,13 +115,18 @@ func (f *Faker) GenProduct(id uint64, v *Vender) *Product {
 }
 
 // FeedBack
-func (f *Faker) GenFeedBack(proid uint64, perid uint64) *FeedBack {
+// proid : productId
+// perid : customerId
+func (f *Faker) GenFeedBack(proid, perid uint64) *FeedBack {
 	return feedback(f.Rand, proid, perid)
 }
 
 // Order
-func GenOrder(id uint64, t time.Time, count uint64) *Order {
-	return order(id, t, count)
+func (f *Faker) GenOrder(oid, pid uint64, p *Product) *Order {
+	count := int(RangeIntGen(f.Rand, 1, 100))
+	fb := f.GenFeedBack(p.id, pid)
+	t := DateRangeYear(f.Rand, beginyear, curyear)
+	return order(pid, oid, count, p, fb, t)
 }
 
 // Person interested in product
@@ -142,41 +143,41 @@ func (f *Faker) GenPKnowP(pf, pt uint64) *PKonwP {
 //         first step generate product & social network           ////
 //////////////////////////////////////////////////////////////////////
 
-func (f *Faker) GenVenders(start int, count int) ([]*Vender, error) {
-	ret := make([]*Vender, count)
-	for i := start; i < count; i++ {
-		ret[i] = f.GenVender(uint64(i))
+func (f *Faker) GenVenders(start int, end int) ([]*Vender, error) {
+	ret := make([]*Vender, end-start)
+	for i := start; i < end; i++ {
+		ret[i-start] = f.GenVender(uint64(i))
 	}
-	fmt.Printf("Generate %d venders successfully\n", count)
+	fmt.Printf("Generate %d venders successfully\n", end-start)
 	return ret, nil
 }
 
-func (f *Faker) GenProducts(start int, count int, vs []*Vender) ([]*Product, error) {
+func (f *Faker) GenProducts(start int, end int, vs []*Vender) ([]*Product, error) {
 	vlen := len(vs)
-	ret := make([]*Product, count)
-	for i := start; i < count; i++ {
+	ret := make([]*Product, end-start)
+	for i := start; i < end; i++ {
 		randv := vs[f.GenRangeIdx(vlen)]
-		ret[i] = f.GenProduct(uint64(i), randv)
+		ret[i-start] = f.GenProduct(uint64(i), randv)
 	}
-	fmt.Printf("Generate %d products successfully\n", count)
+	fmt.Printf("Generate %d products successfully\n", end-start)
 	return ret, nil
 }
 
-func (f *Faker) GenCustomers(start int, count int) ([]*Customer, error) {
-	ret := make([]*Customer, count)
-	for i := start; i < count; i++ {
-		ret[i] = f.GenCustomer(uint64(i))
+func (f *Faker) GenCustomers(start int, end int) ([]*Customer, error) {
+	ret := make([]*Customer, end-start)
+	for i := start; i < end; i++ {
+		ret[i-start] = f.GenCustomer(uint64(i))
 	}
-	fmt.Printf("Generate %d customers successfully\n", count)
+	fmt.Printf("Generate %d customers successfully\n", end-start)
 	return ret, nil
 }
 
-func (f *Faker) GenCinPs(start int, count int, pers []*Customer, pros []*Product) ([]*CinP, error) {
+func (f *Faker) GenCinPs(count int, pers []*Customer, pros []*Product) ([]*CinP, error) {
 	ret := make([]*CinP, count)
 	set := make(map[string]bool)
 	count_pers := len(pers)
 	count_pros := len(pros)
-	for i := start; i < count; i++ {
+	for i := 0; i < count; i++ {
 		per_idx := f.GenRangeIdx(count_pers)
 		pe := pers[per_idx].id
 		pro_idx := f.GenRangeIdx(count_pros)
@@ -194,11 +195,11 @@ func (f *Faker) GenCinPs(start int, count int, pers []*Customer, pros []*Product
 	return ret, nil
 }
 
-func (f *Faker) GenPKnowPs(start int, count int, pers []*Customer) ([]*PKonwP, error) {
+func (f *Faker) GenPKnowPs(count int, pers []*Customer) ([]*PKonwP, error) {
 	ret := make([]*PKonwP, count)
 	set := make(map[string]bool)
 	count_pers := len(pers)
-	for i := start; i < count; i++ {
+	for i := 0; i < count; i++ {
 		p1 := f.GenRangeIdx(count_pers)
 		p2 := f.GenRangeIdx(count_pers)
 		// check if the same customer
@@ -218,19 +219,85 @@ func (f *Faker) GenPKnowPs(start int, count int, pers []*Customer) ([]*PKonwP, e
 	return ret, nil
 }
 
-// step 1
+// step 1 : initial metadata
 // return producrs, venders, customers, cinp, pkonwp
-func (f *Faker) StepOne(start int, count int) ([]*Product, []*Vender, []*Customer, []*CinP, []*PKonwP, error) {
+func (f *Faker) InitMetaData(m *MetaConfig) ([]*Product, []*Vender, []*Customer, []*CinP, []*PKonwP, error) {
 	// generate vender & customer
-	venders, _ := f.GenVenders(start, count/venderperproduct)
-	customers, _ := f.GenCustomers(start, count)
-
+	venders, err := f.GenVenders(m.rvenders.start, m.rcustomers.end)
+	if err != nil {
+		fmt.Println("InitMetaDataError", err)
+	}
+	customers, err := f.GenCustomers(m.rcustomers.start, m.rcustomers.end)
+	if err != nil {
+		fmt.Println("InitMetaDataError", err)
+	}
 	// generate products
-	products, _ := f.GenProducts(start, count, venders)
+	products, err := f.GenProducts(m.rproducts.start, m.rproducts.end, venders)
+	if err != nil {
+		fmt.Println("InitMetaDataError", err)
+	}
 
 	// add edge
-	cinps, _ := f.GenCinPs(start, count, customers, products)
-	pknowsp, _ := f.GenPKnowPs(start, count, customers)
+	cinps, err := f.GenCinPs(m.ncinp, customers, products)
+	if err != nil {
+		fmt.Println("InitMetaDataError", err)
+	}
+	pknowps, err := f.GenPKnowPs(m.npknowp, customers)
+	if err != nil {
+		fmt.Println("InitMetaDataError", err)
+	}
+	fmt.Println("Metadata initial finish")
+	return products, venders, customers, cinps, pknowps, nil
+}
 
-	return products, venders, customers, cinps, pknowsp, nil
+////////////////////////////////////////////////////////////
+////         second step generate transaction           ////
+////////////////////////////////////////////////////////////
+
+// transaction
+func (f *Faker) GenTransaction(oid uint64, p *Customer, pr *Product) (*Order, error) {
+	return f.GenOrder(oid, p.id, pr), nil
+}
+
+// Friends recommended to buy good product
+// return by or not
+func (f *Faker) Expand(fb *FeedBack) bool {
+	// TODO: change to poisson distribution
+	if fb.star > 5 {
+		return true
+	} else {
+		return false
+	}
+}
+
+// step 2
+// generate order & feedback
+func (f *Faker) BeginTransaction(m *MetaConfig) {
+	var orderId uint64 = 0
+	customer_orders := map[uint64][]*Order{}
+	products, _, _, cinps, pknowps, err := f.InitMetaData(m)
+	if err != nil {
+		fmt.Println("Begin transaction failed")
+	}
+
+	// for each interest people
+	for _, cinp := range cinps {
+		product := products[cinp.ProductId]
+		order := f.GenOrder(orderId, cinp.PersonId, product)
+		customer_orders[cinp.PersonId] = append(customer_orders[cinp.PersonId], order)
+		orderId++
+	}
+
+	// for not interest people
+	for _, pknowp := range pknowps {
+		if orders, ok := customer_orders[pknowp.Personfrom]; ok {
+			// random choice product
+			friorder := orders[f.Rand.Intn(len(orders))]
+			if f.Expand(friorder.feedback) {
+				order := f.GenOrder(orderId, pknowp.Personto, friorder.product)
+				customer_orders[pknowp.Personto] = append(customer_orders[pknowp.Personto], order)
+				orderId++
+			}
+		}
+	}
 }

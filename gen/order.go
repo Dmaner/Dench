@@ -2,22 +2,27 @@ package gen
 
 import "time"
 
+// Single product order
 type Order struct {
 	id           uint64
+	customerId   uint64
 	creationdate time.Time
-	totalprice   uint64
-	orderline    []*Product
+	totalprice   float64
+	product      *Product
+	feedback     *FeedBack
 }
 
-func order(oid uint64, t time.Time, pc uint64) *Order {
+func order(pid, oid uint64, count int, p *Product, f *FeedBack, t time.Time) *Order {
 	return &Order{
 		id:           oid,
+		customerId:   pid,
 		creationdate: t,
-		totalprice:   0,
-		orderline:    make([]*Product, pc),
+		totalprice:   p.price * float64(count),
+		product:      p,
+		feedback:     f,
 	}
 }
 
-func (o *Order) AddProduct(p *Product) {
-	o.orderline = append(o.orderline, p)
-}
+// func (o *Order) AddProduct(p *Product) {
+// 	o.orderline = append(o.orderline, p)
+// }
