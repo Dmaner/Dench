@@ -85,9 +85,11 @@ type FeedBack struct {
 ```golang
 type Order struct {
 	id           uint64
+	customerId   uint64
 	creationdate time.Time
-	totalprice   uint64
-	orderline    []*Product
+	totalprice   float64
+	product      *Product
+	feedback     *FeedBack
 }
 ```
 

@@ -1,6 +1,7 @@
 package gen
 
 import (
+	log "Dbench/util"
 	"bytes"
 	"fmt"
 	"math/rand"
@@ -148,7 +149,7 @@ func (f *Faker) GenVenders(start int, end int) ([]*Vender, error) {
 	for i := start; i < end; i++ {
 		ret[i-start] = f.GenVender(uint64(i))
 	}
-	fmt.Printf("Generate %d venders successfully\n", end-start)
+	log.WriteLogf(infolog, "Generate %d venders successfully", end-start)
 	return ret, nil
 }
 
@@ -159,7 +160,7 @@ func (f *Faker) GenProducts(start int, end int, vs []*Vender) ([]*Product, error
 		randv := vs[f.GenRangeIdx(vlen)]
 		ret[i-start] = f.GenProduct(uint64(i), randv)
 	}
-	fmt.Printf("Generate %d products successfully\n", end-start)
+	log.WriteLogf(infolog, "Generate %d products successfully", end-start)
 	return ret, nil
 }
 
@@ -168,7 +169,7 @@ func (f *Faker) GenCustomers(start int, end int) ([]*Customer, error) {
 	for i := start; i < end; i++ {
 		ret[i-start] = f.GenCustomer(uint64(i))
 	}
-	fmt.Printf("Generate %d customers successfully\n", end-start)
+	log.WriteLogf(infolog, "Generate %d customers successfully", end-start)
 	return ret, nil
 }
 
@@ -191,7 +192,7 @@ func (f *Faker) GenCinPs(count int, pers []*Customer, pros []*Product) ([]*CinP,
 			ret[i] = nil
 		}
 	}
-	fmt.Printf("Generate %d cunstomer insterest products edges successfully\n", count)
+	log.WriteLogf(infolog, "Generate %d cunstomer insterest products edges successfully", count)
 	return ret, nil
 }
 
@@ -215,7 +216,7 @@ func (f *Faker) GenPKnowPs(count int, pers []*Customer) ([]*PKonwP, error) {
 			ret[i] = nil
 		}
 	}
-	fmt.Printf("Generate %d cunstomer knows customer edges successfully\n", count)
+	log.WriteLogf(infolog, "Generate %d cunstomer knows customer edges successfully", count)
 	return ret, nil
 }
 
@@ -246,7 +247,7 @@ func (f *Faker) InitMetaData(m *MetaConfig) ([]*Product, []*Vender, []*Customer,
 	if err != nil {
 		fmt.Println("InitMetaDataError", err)
 	}
-	fmt.Println("Metadata initial finish")
+	log.WriteLog(infolog, "Metadata initial finish")
 	return products, venders, customers, cinps, pknowps, nil
 }
 

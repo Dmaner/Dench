@@ -2,6 +2,9 @@ package gen
 
 // params
 
+// Log path
+const infolog = "Info.log"
+
 // metadata
 const bytesPerWordEstimation = 6
 const venderperproduct = 100
