@@ -4,6 +4,7 @@ package gen
 
 // Log path
 const infolog = "Info.log"
+const errorlog = "error.log"
 
 // metadata
 const bytesPerWordEstimation = 6

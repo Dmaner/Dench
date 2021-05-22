@@ -8,16 +8,17 @@ import (
 )
 
 const (
-	LOGPATH  = "log/"
-	FORMAT   = "20200102"
-	LINEFEED = "\r\n"
-	INFO     = "[INFO]: "
+	LOGPATH    = "log/"
+	TIMEFORMAT = "20200102"
+	LINEFEED   = "\r\n"
+	INFOLOG    = "[INFO]: "
+	ERRORLOG   = "[ERROR]: "
 )
 
-var path = LOGPATH + time.Now().Format(FORMAT) + "/"
+var path = LOGPATH + time.Now().Format(TIMEFORMAT) + "/"
 
 //WriteLog return error
-func WriteLog(fileName, msg string) error {
+func WriteLog(fileName string, args ...interface{}) error {
 	if !ifexist(path) {
 		return createdir(path)
 	}
@@ -25,13 +26,14 @@ func WriteLog(fileName, msg string) error {
 	if err != nil {
 		return err
 	}
+	msg := fmt.Sprint(args...)
 	_, err = io.WriteString(f, LINEFEED+msg)
 
 	defer f.Close()
 	return err
 }
 
-func WriteLogf(fileName, format string, arg ...interface{}) error {
+func WriteLogf(fileName, TIMEFORMAT string, arg ...interface{}) error {
 	if !ifexist(path) {
 		return createdir(path)
 	}
@@ -39,9 +41,25 @@ func WriteLogf(fileName, format string, arg ...interface{}) error {
 	if err != nil {
 		return err
 	}
-	msg := fmt.Sprintf(format, arg...)
+	msg := fmt.Sprintf(TIMEFORMAT, arg...)
 
-	_, err = io.WriteString(f, LINEFEED+INFO+msg)
+	_, err = io.WriteString(f, LINEFEED+INFOLOG+msg)
+
+	defer f.Close()
+	return err
+}
+
+// error log
+func ErrorLog(fileName string, args ...interface{}) error {
+	if !ifexist(path) {
+		return createdir(path)
+	}
+	f, err := os.OpenFile(path+fileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		return err
+	}
+	msg := fmt.Sprint(args...)
+	_, err = io.WriteString(f, LINEFEED+ERRORLOG+msg)
 
 	defer f.Close()
 	return err
