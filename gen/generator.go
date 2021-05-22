@@ -63,7 +63,7 @@ func GenWord(r *rand.Rand) string {
 }
 
 func GenSentence(r *rand.Rand) string {
-	count := r.Intn(10)
+	count := r.Intn(10) + 2
 	if count == 0 {
 		return ""
 	}
@@ -226,26 +226,26 @@ func (f *Faker) InitMetaData(m *MetaConfig) ([]*Product, []*Vender, []*Customer,
 	// generate vender & customer
 	venders, err := f.GenVenders(m.rvenders.start, m.rcustomers.end)
 	if err != nil {
-		log.ErrorLog(errorlog, "Generate vender failed", err)
+		log.ErrorLog(err)
 	}
 	customers, err := f.GenCustomers(m.rcustomers.start, m.rcustomers.end)
 	if err != nil {
-		log.ErrorLog(errorlog, "Generate customer failed", err)
+		log.ErrorLog(err)
 	}
 	// generate products
 	products, err := f.GenProducts(m.rproducts.start, m.rproducts.end, venders)
 	if err != nil {
-		log.ErrorLog(errorlog, "Generate product failed", err)
+		log.ErrorLog(err)
 	}
 
 	// add edge
 	cinps, err := f.GenCinPs(m.ncinp, customers, products)
 	if err != nil {
-		log.ErrorLog(errorlog, "Generate cinp failed", err)
+		log.ErrorLog(err)
 	}
 	pknowps, err := f.GenPKnowPs(m.npknowp, customers)
 	if err != nil {
-		log.ErrorLog(errorlog, "Generate pkonwp failed", err)
+		log.ErrorLog(err)
 	}
 	log.WriteLog(infolog, "Metadata initial finish")
 	return products, venders, customers, cinps, pknowps, nil

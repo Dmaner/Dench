@@ -27,7 +27,7 @@ func WriteLog(fileName string, args ...interface{}) error {
 		return err
 	}
 	msg := fmt.Sprint(args...)
-	_, err = io.WriteString(f, LINEFEED+msg)
+	_, err = io.WriteString(f, msg+LINEFEED)
 
 	defer f.Close()
 	return err
@@ -43,26 +43,16 @@ func WriteLogf(fileName, TIMEFORMAT string, arg ...interface{}) error {
 	}
 	msg := fmt.Sprintf(TIMEFORMAT, arg...)
 
-	_, err = io.WriteString(f, LINEFEED+INFOLOG+msg)
+	_, err = io.WriteString(f, INFOLOG+msg+LINEFEED)
 
 	defer f.Close()
 	return err
 }
 
-// error log
-func ErrorLog(fileName string, args ...interface{}) error {
-	if !ifexist(path) {
-		return createdir(path)
-	}
-	f, err := os.OpenFile(path+fileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		return err
-	}
-	msg := fmt.Sprint(args...)
-	_, err = io.WriteString(f, LINEFEED+ERRORLOG+msg)
-
-	defer f.Close()
-	return err
+// log.fatal
+func ErrorLog(args ...interface{}) {
+	fmt.Print(ERRORLOG)
+	fmt.Println(args...)
 }
 
 //createdir

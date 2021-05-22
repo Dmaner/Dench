@@ -73,6 +73,36 @@ func customer(r *rand.Rand, num uint64) *Customer {
 	}
 }
 
+// Get headers
+func CustomerHeaders() []string {
+	return []string{
+		"CustomerId",
+		"FirstName",
+		"LastName",
+		"Gender",
+		"BirthDay",
+		"LocationIP",
+		"Browser",
+		"Place",
+		"Job",
+	}
+}
+
+// customer to slice
+func (c *Customer) ToSlice() []string {
+	return []string{
+		strconv.FormatUint(c.id, 10),
+		c.fristname,
+		c.lastname,
+		c.gender,
+		c.birthday.Format("2006-01-12"),
+		c.locationIP,
+		c.browserUsed,
+		c.place,
+		c.job,
+	}
+}
+
 func (c *Customer) String() string {
 	return fmt.Sprint(
 		"Id : "+strconv.FormatUint(c.id, 10)+"\n",

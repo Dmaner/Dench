@@ -4,7 +4,6 @@ package gen
 
 // Log path
 const infolog = "Info.log"
-const errorlog = "error.log"
 
 // metadata
 const bytesPerWordEstimation = 6
@@ -16,6 +15,9 @@ const personintestpro = 10
 // order
 const beginyear = 2008
 const curyear = 2021
+
+// data save path
+// const savepath = "../data"
 
 // represent [start, end]
 type RangeInt struct {

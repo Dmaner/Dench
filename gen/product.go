@@ -17,6 +17,24 @@ type Product struct {
 	brand *Vender
 }
 
+func ProductHeaders() []string {
+	return []string{
+		"ProductId",
+		"Information",
+		"Price",
+		"VendID",
+	}
+}
+
+func (p *Product) ToSlice() []string {
+	return []string{
+		strconv.FormatUint(p.id, 10),
+		p.info,
+		strconv.FormatFloat(p.price, 'f', 6, 64),
+		fmt.Sprintf("VE%d", p.brand.id),
+	}
+}
+
 func product(r *rand.Rand, num uint64, v *Vender) *Product {
 	return &Product{
 		id:    num,
