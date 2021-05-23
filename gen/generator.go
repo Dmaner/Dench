@@ -124,7 +124,7 @@ func (f *Faker) GenFeedBack(proid, perid uint64) *FeedBack {
 // Order
 func (f *Faker) GenOrder(oid, pid uint64, p *Product) *Order {
 	count := int(RangeIntGen(f.Rand, 1, 100))
-	fb := f.GenFeedBack(p.id, pid)
+	fb := f.GenFeedBack(p.ProductId, pid)
 	t := DateRangeYear(f.Rand, beginyear, curyear)
 	return order(oid, count, p, fb, t)
 }
@@ -182,7 +182,7 @@ func (f *Faker) GenCinPs(count int, pers []*Customer, pros []*Product) ([]*CinP,
 		per_idx := f.GenRangeIdx(count_pers)
 		pe := pers[per_idx].id
 		pro_idx := f.GenRangeIdx(count_pros)
-		pr := pros[pro_idx].id
+		pr := pros[pro_idx].ProductId
 		key := ConnectStringKey(per_idx, pro_idx)
 		// check if generate before
 		if _, ok := set[key]; !ok {
@@ -288,7 +288,7 @@ func (f *Faker) Purchase(
 // return by or not
 func (f *Faker) Expand(fb *FeedBack) bool {
 	// TODO: change to poisson distribution
-	if fb.star > 5 {
+	if fb.Star > 5 {
 		return true
 	} else {
 		return false
@@ -365,5 +365,6 @@ func (f *Faker) SequentialGen(m *MetaConfig, path string) {
 	log.WriteLogf(infolog, "Spread %d order, %d total order", sId-oldsId, csId-oldcsId)
 	csarr := CustomerMapToArr(csmap)
 	SaveCtrOrderJson(path, csarr)
+	SaveCtrOderXML(path, csarr)
 	log.WriteLog("Sequential version run sucessfully")
 }

@@ -7,27 +7,27 @@ import (
 
 // Single product order
 type Order struct {
-	SubOrderId   uint64    `json:"SubOrderId"`
-	CreationDate time.Time `json:"CreationDate"`
-	TotalPrice   float64   `json:"TotalPrice"`
-	Product      *Product  `json:"Product"`
-	Feedback     *FeedBack `json:"Feedback"`
+	SubOrderId   uint64    `xml:"SubOrderId" json:"SubOrderId"`
+	CreationDate time.Time `xml:"CreationDate" json:"CreationDate"`
+	TotalPrice   float64   `xml:"TotalPrice" json:"TotalPrice"`
+	Product      *Product  `xml:"Product" json:"Product"`
+	Feedback     *FeedBack `xml:"Feedback" json:"Feedback"`
 }
 
 // all orders of a customer
 type CtrOrders struct {
-	OrderId    uint64   `json:"OrderId"`
-	CustomerId uint64   `json:"CustomerId"`
-	Cost       float64  `json:"Cost"`
-	Orders     []*Order `json:"Suborders"`
-	OrdersLen  int      `json:"OrdersLen"`
+	OrderId    uint64   `xml:"OrderId" json:"OrderId"`
+	CustomerId uint64   `xml:"CustomerId" json:"CustomerId"`
+	Cost       float64  `xml:"Cost" json:"Cost"`
+	Orders     []*Order `xml:"Suborders" json:"Suborders"`
+	OrdersLen  int      `xml:"OrdersLen" json:"OrdersLen"`
 }
 
 func order(oid uint64, count int, p *Product, f *FeedBack, t time.Time) *Order {
 	return &Order{
 		SubOrderId:   oid,
 		CreationDate: t,
-		TotalPrice:   p.price * float64(count),
+		TotalPrice:   p.Price * float64(count),
 		Product:      p,
 		Feedback:     f,
 	}

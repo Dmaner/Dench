@@ -41,8 +41,8 @@ type MetaConfig struct {
 }
 
 type Config struct {
-	m    *MetaConfig `for init data generator`
-	path string      `path for save data`
+	m    *MetaConfig
+	path string
 }
 
 // Sample

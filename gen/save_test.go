@@ -53,7 +53,7 @@ func TestSaveCtrOderJson(t *testing.T) {
 	v := f.GenVender(1)
 	p := f.GenProduct(1, v)
 	o := f.GenOrder(1, 1, p)
-	os := ctrorders(1, p.id)
+	os := ctrorders(1, p.ProductId)
 	os.Apppend(o)
 	SaveCtrOrderJson("../data", []*CtrOrders{os})
 }

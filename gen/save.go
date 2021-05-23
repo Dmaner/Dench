@@ -4,6 +4,7 @@ import (
 	log "Dbench/util"
 	"encoding/csv"
 	"encoding/json"
+	"encoding/xml"
 	"io/ioutil"
 	"os"
 )
@@ -148,6 +149,26 @@ func SaveCtrOrderJson(savepath string, cs []*CtrOrders) {
 	}
 	defer file.Close()
 
-	js, _ := json.Marshal(cs)
+	js, err := json.Marshal(cs)
+	if err != nil {
+		log.ErrorLog(err)
+	}
 	ioutil.WriteFile(path, js, 0644)
+	log.WriteLogf(infolog, "Sucessfully save to", path)
+}
+
+func SaveCtrOderXML(savepath string, cs []*CtrOrders) {
+	path := savepath + "/invoice.xml"
+	file, err := os.Create(path)
+	if err != nil {
+		log.ErrorLog(err)
+	}
+	defer file.Close()
+
+	js, err := xml.Marshal(cs)
+	if err != nil {
+		log.ErrorLog(err)
+	}
+	ioutil.WriteFile(path, js, 0644)
+	log.WriteLogf(infolog, "Sucessfully save to", path)
 }

@@ -42,9 +42,9 @@ type Customer struct {
 
 ```golang
 type Vender struct {
-	id      uint64
-	country string
-	company string
+	VenderId uint64 `xml:"VenderId" json:"VenderId"`
+	Country  string `xml:"Country" json:"Country"`
+	Company  string `xml:"Company" json:"Company"`
 }
 ```
 
@@ -54,10 +54,10 @@ type Vender struct {
 
 ```golang
 type FeedBack struct {
-	productId uint64
-	personId  uint64
-	star      float64 	`评分`
-	comment   string	`用户评价`
+	ProductId  uint64  `xml:"ProductId" json:"ProductId"`
+	CustomerId uint64  `xml:"CustomerId" json:"CustomerId"`
+	Star       float64 `xml:"Star" json:"Star"`
+	Comment    string  `xml:"Comment" json:"Comment"`
 }
 ```
 
@@ -65,18 +65,24 @@ type FeedBack struct {
 
 ### Invoice 
 
-```xml
-<OrderId>
-<PersonId>
-<OrderDate>
-<TotalPrice>
-<Orderline>
-  <productId>
-  <asin>
-  <title>
-  <price>
-  <brand>
-</Orderline>
+```golang
+// Single product order
+type Order struct {
+	SubOrderId   uint64    `xml:"SubOrderId" json:"SubOrderId"`
+	CreationDate time.Time `xml:"CreationDate" json:"CreationDate"`
+	TotalPrice   float64   `xml:"TotalPrice" json:"TotalPrice"`
+	Product      *Product  `xml:"Product" json:"Product"`
+	Feedback     *FeedBack `xml:"Feedback" json:"Feedback"`
+}
+
+// all orders of a customer
+type CtrOrders struct {
+	OrderId    uint64   `xml:"OrderId" json:"OrderId"`
+	CustomerId uint64   `xml:"CustomerId" json:"CustomerId"`
+	Cost       float64  `xml:"Cost" json:"Cost"`
+	Orders     []*Order `xml:"Suborders" json:"Suborders"`
+	OrdersLen  int      `xml:"OrdersLen" json:"OrdersLen"`
+}
 ```
 ## Json类型数据
 
@@ -85,20 +91,20 @@ type FeedBack struct {
 ```golang
 // Single product order
 type Order struct {
-	SubOrderId   uint64    `json:"SubOrderId"`
-	CreationDate time.Time `json:"CreationDate"`
-	TotalPrice   float64   `json:"TotalPrice"`
-	Product      *Product  `json:"Product"`
-	Feedback     *FeedBack `json:"Feedback"`
+	SubOrderId   uint64    `xml:"SubOrderId" json:"SubOrderId"`
+	CreationDate time.Time `xml:"CreationDate" json:"CreationDate"`
+	TotalPrice   float64   `xml:"TotalPrice" json:"TotalPrice"`
+	Product      *Product  `xml:"Product" json:"Product"`
+	Feedback     *FeedBack `xml:"Feedback" json:"Feedback"`
 }
 
 // all orders of a customer
 type CtrOrders struct {
-	OrderId   uint64   `json:"OrderId"`
-	PersonId  uint64   `json:"PersonId"`
-	Cost      float64  `json:"Cost"`
-	Orders    []*Order `json:"Suborders"`
-	OrdersLen int      `json:"OrdersLen"`
+	OrderId    uint64   `xml:"OrderId" json:"OrderId"`
+	CustomerId uint64   `xml:"CustomerId" json:"CustomerId"`
+	Cost       float64  `xml:"Cost" json:"Cost"`
+	Orders     []*Order `xml:"Suborders" json:"Suborders"`
+	OrdersLen  int      `xml:"OrdersLen" json:"OrdersLen"`
 }
 ```
 

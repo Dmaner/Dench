@@ -11,44 +11,44 @@ const minprice = 1
 const maxprice = 100000000
 
 type Product struct {
-	id    uint64
-	info  string
-	price float64
-	brand *Vender
+	ProductId uint64  `xml:"ProductId" json:"ProductId"`
+	Info      string  `xml:"Info" json:"Info"`
+	Price     float64 `xml:"Price" json:"Price"`
+	Vender    *Vender `xml:"Vender" json:"Vender"`
 }
 
 func ProductHeaders() []string {
 	return []string{
 		"ProductId",
-		"Information",
+		"Info",
 		"Price",
-		"VendID",
+		"Vender",
 	}
 }
 
 func (p *Product) ToSlice() []string {
 	return []string{
-		strconv.FormatUint(p.id, 10),
-		p.info,
-		strconv.FormatFloat(p.price, 'f', 6, 64),
-		fmt.Sprintf("VE%d", p.brand.id),
+		strconv.FormatUint(p.ProductId, 10),
+		p.Info,
+		strconv.FormatFloat(p.Price, 'f', 6, 64),
+		fmt.Sprintf("VE%d", p.Vender.VenderId),
 	}
 }
 
 func product(r *rand.Rand, num uint64, v *Vender) *Product {
 	return &Product{
-		id:    num,
-		info:  GenSentence(r),
-		price: RangeFloatGen(r, minprice, maxprice),
-		brand: v,
+		ProductId: num,
+		Info:      GenSentence(r),
+		Price:     RangeFloatGen(r, minprice, maxprice),
+		Vender:    v,
 	}
 }
 
 func (p *Product) String() string {
 	return fmt.Sprint(
-		"ProductId: "+strconv.FormatUint(p.id, 10)+"\n",
-		"Info: "+p.info+"\n",
-		"Price: "+strconv.FormatFloat(p.price, 'f', 6, 64)+"\n",
-		"Brand: \n"+p.brand.String(),
+		"ProductId: "+strconv.FormatUint(p.ProductId, 10)+"\n",
+		"Info: "+p.Info+"\n",
+		"Price: "+strconv.FormatFloat(p.Price, 'f', 6, 64)+"\n",
+		"Brand: \n"+p.Vender.String(),
 	)
 }

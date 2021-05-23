@@ -7,10 +7,10 @@ import (
 )
 
 type FeedBack struct {
-	productId uint64
-	personId  uint64
-	star      float64
-	comment   string
+	ProductId  uint64  `xml:"ProductId" json:"ProductId"`
+	CustomerId uint64  `xml:"CustomerId" json:"CustomerId"`
+	Star       float64 `xml:"Star" json:"Star"`
+	Comment    string  `xml:"Comment" json:"Comment"`
 }
 
 func FeedBackHeader() []string {
@@ -24,27 +24,27 @@ func FeedBackHeader() []string {
 
 func (f *FeedBack) ToSlice() []string {
 	return []string{
-		strconv.FormatUint(f.productId, 10),
-		strconv.FormatUint(f.personId, 10),
-		strconv.FormatFloat(f.star, 'f', 1, 32),
-		f.comment,
+		strconv.FormatUint(f.ProductId, 10),
+		strconv.FormatUint(f.CustomerId, 10),
+		strconv.FormatFloat(f.Star, 'f', 1, 32),
+		f.Comment,
 	}
 }
 
 func feedback(r *rand.Rand, pr uint64, pe uint64) *FeedBack {
 	return &FeedBack{
-		productId: pr,
-		personId:  pe,
-		star:      RangeFloatGen(r, 0, 10),
-		comment:   GenSentence(r),
+		ProductId:  pr,
+		CustomerId: pe,
+		Star:       RangeFloatGen(r, 0, 10),
+		Comment:    GenSentence(r),
 	}
 }
 
 func (f *FeedBack) String() string {
 	return fmt.Sprint(
-		"ProductId: "+strconv.FormatUint(f.productId, 10)+"\n",
-		"PersonId: "+strconv.FormatUint(f.personId, 10)+"\n",
-		"Star"+strconv.FormatFloat(f.star, 'f', 1, 32)+"\n",
-		"Comment: "+f.comment,
+		"ProductId: "+strconv.FormatUint(f.ProductId, 10)+"\n",
+		"PersonId: "+strconv.FormatUint(f.CustomerId, 10)+"\n",
+		"Star"+strconv.FormatFloat(f.Star, 'f', 1, 32)+"\n",
+		"Comment: "+f.Comment,
 	)
 }
