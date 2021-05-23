@@ -83,14 +83,22 @@ type FeedBack struct {
 ### Order
 
 ```golang
-// single order
+// Single product order
 type Order struct {
-	id           uint64
-	customerId   uint64
-	creationdate time.Time
-	totalprice   float64
-	product      *Product
-	feedback     *FeedBack
+	SubOrderId   uint64    `json:"SubOrderId"`
+	CreationDate time.Time `json:"CreationDate"`
+	TotalPrice   float64   `json:"TotalPrice"`
+	Product      *Product  `json:"Product"`
+	Feedback     *FeedBack `json:"Feedback"`
+}
+
+// all orders of a customer
+type CtrOrders struct {
+	OrderId   uint64   `json:"OrderId"`
+	PersonId  uint64   `json:"PersonId"`
+	Cost      float64  `json:"Cost"`
+	Orders    []*Order `json:"Suborders"`
+	OrdersLen int      `json:"OrdersLen"`
 }
 ```
 

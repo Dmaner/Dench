@@ -172,8 +172,9 @@ func (f *Faker) GenCustomers(start int, end int) ([]*Customer, error) {
 	return ret, nil
 }
 
+// warning : will generate nil edge
 func (f *Faker) GenCinPs(count int, pers []*Customer, pros []*Product) ([]*CinP, error) {
-	ret := make([]*CinP, count)
+	ret := make([]*CinP, 0, count)
 	set := make(map[string]bool)
 	count_pers := len(pers)
 	count_pros := len(pros)
@@ -186,17 +187,16 @@ func (f *Faker) GenCinPs(count int, pers []*Customer, pros []*Product) ([]*CinP,
 		// check if generate before
 		if _, ok := set[key]; !ok {
 			set[key] = true
-			ret[i] = f.GenCinP(pe, pr)
-		} else {
-			ret[i] = nil
+			ret = append(ret, f.GenCinP(pe, pr))
 		}
 	}
-	log.WriteLogf(infolog, "Generate %d cunstomer insterest products edges successfully", count)
+	log.WriteLogf(infolog, "Generate %d cunstomer insterest products edges successfully", len(ret))
 	return ret, nil
 }
 
+// warning will generate nil edge
 func (f *Faker) GenPKnowPs(count int, pers []*Customer) ([]*PKonwP, error) {
-	ret := make([]*PKonwP, count)
+	ret := make([]*PKonwP, 0, count)
 	set := make(map[string]bool)
 	count_pers := len(pers)
 	for i := 0; i < count; i++ {
@@ -210,12 +210,10 @@ func (f *Faker) GenPKnowPs(count int, pers []*Customer) ([]*PKonwP, error) {
 		// check if generate before
 		if _, ok := set[key]; !ok {
 			set[key] = true
-			ret[i] = f.GenPKnowP(pers[p1].id, pers[p2].id)
-		} else {
-			ret[i] = nil
+			ret = append(ret, f.GenPKnowP(pers[p1].id, pers[p2].id))
 		}
 	}
-	log.WriteLogf(infolog, "Generate %d cunstomer knows customer edges successfully", count)
+	log.WriteLogf(infolog, "Generate %d cunstomer knows customer edges successfully", len(ret))
 	return ret, nil
 }
 
@@ -312,10 +310,10 @@ func (f *Faker) SpreadRepurchase(
 		if cos, ok := csmap[pp.Personfrom]; ok {
 			// choice an product to recommend
 			recorder := cos.randrecommand(f.Rand)
-			product := recorder.product
+			product := recorder.Product
 
 			// if recommend sucessfully
-			if f.Expand(recorder.feedback) {
+			if f.Expand(recorder.Feedback) {
 				order := f.GenOrder(sId, pp.Personto, product)
 				if _, ok := csmap[pp.Personto]; !ok {
 					csos := ctrorders(csId, pp.Personto)
@@ -335,6 +333,7 @@ func (f *Faker) SpreadRepurchase(
 func CustomerMapToArr(csmap map[uint64]*CtrOrders) []*CtrOrders {
 	arr := make([]*CtrOrders, 0, len(csmap))
 	for _, cs := range csmap {
+		cs.calcost()
 		arr = append(arr, cs)
 	}
 	return arr
@@ -364,5 +363,7 @@ func (f *Faker) SequentialGen(m *MetaConfig, path string) {
 		log.ErrorLog(err)
 	}
 	log.WriteLogf(infolog, "Spread %d order, %d total order", sId-oldsId, csId-oldcsId)
-	CustomerMapToArr(csmap)
+	csarr := CustomerMapToArr(csmap)
+	SaveCtrOrderJson(path, csarr)
+	log.WriteLog("Sequential version run sucessfully")
 }

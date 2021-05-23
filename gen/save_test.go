@@ -47,3 +47,13 @@ func TestSaveCustomers(t *testing.T) {
 	checkFileExit(checkpath)
 	deltestfile(checkpath)
 }
+
+func TestSaveCtrOderJson(t *testing.T) {
+	var f *Faker = New(1)
+	v := f.GenVender(1)
+	p := f.GenProduct(1, v)
+	o := f.GenOrder(1, 1, p)
+	os := ctrorders(1, p.id)
+	os.Apppend(o)
+	SaveCtrOrderJson("../data", []*CtrOrders{os})
+}

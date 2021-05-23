@@ -7,29 +7,29 @@ import (
 
 // Single product order
 type Order struct {
-	id           uint64
-	creationdate time.Time
-	totalprice   float64
-	product      *Product
-	feedback     *FeedBack
+	SubOrderId   uint64    `json:"SubOrderId"`
+	CreationDate time.Time `json:"CreationDate"`
+	TotalPrice   float64   `json:"TotalPrice"`
+	Product      *Product  `json:"Product"`
+	Feedback     *FeedBack `json:"Feedback"`
 }
 
 // all orders of a customer
 type CtrOrders struct {
-	id        uint64  // order id
-	PersonId  uint64  // person id
-	cost      float64 // all cost
-	orders    []*Order
-	ordersLen int
+	OrderId    uint64   `json:"OrderId"`
+	CustomerId uint64   `json:"CustomerId"`
+	Cost       float64  `json:"Cost"`
+	Orders     []*Order `json:"Suborders"`
+	OrdersLen  int      `json:"OrdersLen"`
 }
 
 func order(oid uint64, count int, p *Product, f *FeedBack, t time.Time) *Order {
 	return &Order{
-		id:           oid,
-		creationdate: t,
-		totalprice:   p.price * float64(count),
-		product:      p,
-		feedback:     f,
+		SubOrderId:   oid,
+		CreationDate: t,
+		TotalPrice:   p.price * float64(count),
+		Product:      p,
+		Feedback:     f,
 	}
 }
 
@@ -37,25 +37,25 @@ func order(oid uint64, count int, p *Product, f *FeedBack, t time.Time) *Order {
 // pid: customer id
 func ctrorders(oid, pid uint64) *CtrOrders {
 	return &CtrOrders{
-		id:        oid,
-		PersonId:  pid,
-		cost:      0,
-		orders:    make([]*Order, 0),
-		ordersLen: 0,
+		OrderId:    oid,
+		CustomerId: pid,
+		Cost:       0,
+		Orders:     make([]*Order, 0),
+		OrdersLen:  0,
 	}
 }
 
 func (cos *CtrOrders) Apppend(o *Order) {
-	cos.orders = append(cos.orders, o)
-	cos.ordersLen++
+	cos.Orders = append(cos.Orders, o)
+	cos.OrdersLen++
 }
 
 func (cos *CtrOrders) randrecommand(r *rand.Rand) *Order {
-	return cos.orders[r.Intn(cos.ordersLen)]
+	return cos.Orders[r.Intn(cos.OrdersLen)]
 }
 
 func (cos *CtrOrders) calcost() {
-	for _, o := range cos.orders {
-		cos.cost += o.totalprice
+	for _, o := range cos.Orders {
+		cos.Cost += o.TotalPrice
 	}
 }

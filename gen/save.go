@@ -3,6 +3,8 @@ package gen
 import (
 	log "Dbench/util"
 	"encoding/csv"
+	"encoding/json"
+	"io/ioutil"
 	"os"
 )
 
@@ -136,4 +138,16 @@ func SaveFeedBacks(savepath string, fbs []*FeedBack) {
 		writeCsvSting(csvwriter, data.ToSlice())
 	}
 	log.WriteLog(infolog, "Sucessully save to", path)
+}
+
+func SaveCtrOrderJson(savepath string, cs []*CtrOrders) {
+	path := savepath + "/orders.json"
+	file, err := os.Create(path)
+	if err != nil {
+		log.ErrorLog(err)
+	}
+	defer file.Close()
+
+	js, _ := json.Marshal(cs)
+	ioutil.WriteFile(path, js, 0644)
 }

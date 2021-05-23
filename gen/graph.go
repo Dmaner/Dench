@@ -1,8 +1,8 @@
 package gen
 
 import (
+	"fmt"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
@@ -38,16 +38,16 @@ func PKnowPHeaders() []string {
 
 func (cp *CinP) ToSlice() []string {
 	return []string{
-		strconv.FormatUint(cp.PersonId, 10),
-		strconv.FormatUint(cp.ProductId, 10),
-		strconv.FormatUint(uint64(cp.IntersetValue), 10),
+		fmt.Sprint(cp.PersonId),
+		fmt.Sprint(cp.ProductId),
+		fmt.Sprint(cp.IntersetValue),
 	}
 }
 
 func (pp *PKonwP) ToSlice() []string {
 	return []string{
-		strconv.FormatUint(pp.Personfrom, 10),
-		strconv.FormatUint(pp.Personto, 10),
+		fmt.Sprint(pp.Personfrom),
+		fmt.Sprint(pp.Personto),
 		pp.Creationdate.Format("2006-01-02"),
 	}
 }
