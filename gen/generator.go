@@ -366,5 +366,5 @@ func (f *Faker) SequentialGen(m *MetaConfig, path string) {
 	csarr := CustomerMapToArr(csmap)
 	SaveCtrOrderJson(path, csarr)
 	SaveCtrOderXML(path, csarr)
-	log.WriteLog("Sequential version run sucessfully")
+	log.WriteLog(infolog, "Sequential version run sucessfully")
 }

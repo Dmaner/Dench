@@ -27,7 +27,7 @@ func WriteLog(fileName string, args ...interface{}) error {
 		return err
 	}
 	msg := fmt.Sprint(args...)
-	_, err = io.WriteString(f, msg+LINEFEED)
+	_, err = io.WriteString(f, INFOLOG+msg+LINEFEED)
 
 	defer f.Close()
 	return err
