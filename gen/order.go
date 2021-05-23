@@ -1,21 +1,31 @@
 package gen
 
-import "time"
+import (
+	"math/rand"
+	"time"
+)
 
 // Single product order
 type Order struct {
 	id           uint64
-	customerId   uint64
 	creationdate time.Time
 	totalprice   float64
 	product      *Product
 	feedback     *FeedBack
 }
 
-func order(pid, oid uint64, count int, p *Product, f *FeedBack, t time.Time) *Order {
+// all orders of a customer
+type CtrOrders struct {
+	id        uint64  // order id
+	PersonId  uint64  // person id
+	cost      float64 // all cost
+	orders    []*Order
+	ordersLen int
+}
+
+func order(oid uint64, count int, p *Product, f *FeedBack, t time.Time) *Order {
 	return &Order{
 		id:           oid,
-		customerId:   pid,
 		creationdate: t,
 		totalprice:   p.price * float64(count),
 		product:      p,
@@ -23,6 +33,29 @@ func order(pid, oid uint64, count int, p *Product, f *FeedBack, t time.Time) *Or
 	}
 }
 
-// func (o *Order) AddProduct(p *Product) {
-// 	o.orderline = append(o.orderline, p)
-// }
+// oid: order id
+// pid: customer id
+func ctrorders(oid, pid uint64) *CtrOrders {
+	return &CtrOrders{
+		id:        oid,
+		PersonId:  pid,
+		cost:      0,
+		orders:    make([]*Order, 0),
+		ordersLen: 0,
+	}
+}
+
+func (cos *CtrOrders) Apppend(o *Order) {
+	cos.orders = append(cos.orders, o)
+	cos.ordersLen++
+}
+
+func (cos *CtrOrders) randrecommand(r *rand.Rand) *Order {
+	return cos.orders[r.Intn(cos.ordersLen)]
+}
+
+func (cos *CtrOrders) calcost() {
+	for _, o := range cos.orders {
+		cos.cost += o.totalprice
+	}
+}

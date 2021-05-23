@@ -53,6 +53,7 @@ func WriteLogf(fileName, TIMEFORMAT string, arg ...interface{}) error {
 func ErrorLog(args ...interface{}) {
 	fmt.Print(ERRORLOG)
 	fmt.Println(args...)
+	os.Exit(1)
 }
 
 //createdir

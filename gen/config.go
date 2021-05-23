@@ -40,6 +40,11 @@ type MetaConfig struct {
 	npknowp    int
 }
 
+type Config struct {
+	m    *MetaConfig `for init data generator`
+	path string      `path for save data`
+}
+
 // Sample
 func MetaConfigGen(n int) *MetaConfig {
 	var numofc int = n

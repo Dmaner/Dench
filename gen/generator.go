@@ -3,7 +3,6 @@ package gen
 import (
 	log "Dbench/util"
 	"bytes"
-	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -127,7 +126,7 @@ func (f *Faker) GenOrder(oid, pid uint64, p *Product) *Order {
 	count := int(RangeIntGen(f.Rand, 1, 100))
 	fb := f.GenFeedBack(p.id, pid)
 	t := DateRangeYear(f.Rand, beginyear, curyear)
-	return order(pid, oid, count, p, fb, t)
+	return order(oid, count, p, fb, t)
 }
 
 // Person interested in product
@@ -251,14 +250,41 @@ func (f *Faker) InitMetaData(m *MetaConfig) ([]*Product, []*Vender, []*Customer,
 	return products, venders, customers, cinps, pknowps, nil
 }
 
-////////////////////////////////////////////////////////////
-////         second step generate transaction           ////
-////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+////         second step   purchase product gengerate order           ////
+//////////////////////////////////////////////////////////////////////////
 
-// transaction
-func (f *Faker) GenTransaction(oid uint64, p *Customer, pr *Product) (*Order, error) {
-	return f.GenOrder(oid, p.id, pr), nil
+// step 2 purchase
+func (f *Faker) Purchase(
+	products []*Product,
+	customers []*Customer,
+	cinps []*CinP,
+) (map[uint64]*CtrOrders, uint64, uint64, error) {
+	var singleoId uint64 = 0 // single order id
+	var csorderId uint64 = 0 // a customer's orders' id
+	customermap := map[uint64]*CtrOrders{}
+
+	// for each interest people
+	for _, cinp := range cinps {
+		product := products[cinp.ProductId]
+		order := f.GenOrder(singleoId, cinp.PersonId, product)
+		if _, ok := customermap[cinp.PersonId]; !ok {
+			csos := ctrorders(csorderId, cinp.PersonId)
+			csos.Apppend(order)
+			customermap[cinp.PersonId] = csos
+			csorderId++
+		} else {
+			customermap[cinp.PersonId].Apppend(order)
+		}
+		singleoId++
+	}
+
+	return customermap, singleoId, csorderId, nil
 }
+
+/////////////////////////////////////////////////////////
+////         third step  spread & repurchase         ////
+/////////////////////////////////////////////////////////
 
 // Friends recommended to buy good product
 // return by or not
@@ -271,34 +297,72 @@ func (f *Faker) Expand(fb *FeedBack) bool {
 	}
 }
 
-// step 2
-// generate order & feedback
-func (f *Faker) BeginTransaction(m *MetaConfig) {
-	var orderId uint64 = 0
-	customer_orders := map[uint64][]*Order{}
-	products, _, _, cinps, pknowps, err := f.InitMetaData(m)
-	if err != nil {
-		fmt.Println("Begin transaction failed")
-	}
-
-	// for each interest people
-	for _, cinp := range cinps {
-		product := products[cinp.ProductId]
-		order := f.GenOrder(orderId, cinp.PersonId, product)
-		customer_orders[cinp.PersonId] = append(customer_orders[cinp.PersonId], order)
-		orderId++
-	}
-
+// step 3
+func (f *Faker) SpreadRepurchase(
+	products []*Product,
+	customers []*Customer,
+	pknowps []*PKonwP,
+	csmap map[uint64]*CtrOrders,
+	sId, csId uint64,
+) (map[uint64]*CtrOrders, uint64, uint64, error) {
 	// for not interest people
-	for _, pknowp := range pknowps {
-		if orders, ok := customer_orders[pknowp.Personfrom]; ok {
-			// random choice product
-			friorder := orders[f.Rand.Intn(len(orders))]
-			if f.Expand(friorder.feedback) {
-				order := f.GenOrder(orderId, pknowp.Personto, friorder.product)
-				customer_orders[pknowp.Personto] = append(customer_orders[pknowp.Personto], order)
-				orderId++
+	for _, pp := range pknowps {
+
+		// interest people search not interested people
+		if cos, ok := csmap[pp.Personfrom]; ok {
+			// choice an product to recommend
+			recorder := cos.randrecommand(f.Rand)
+			product := recorder.product
+
+			// if recommend sucessfully
+			if f.Expand(recorder.feedback) {
+				order := f.GenOrder(sId, pp.Personto, product)
+				if _, ok := csmap[pp.Personto]; !ok {
+					csos := ctrorders(csId, pp.Personto)
+					csos.Apppend(order)
+					csmap[pp.Personto] = csos
+					csId++
+				} else {
+					csmap[pp.Personto].Apppend(order)
+				}
+				sId++
 			}
 		}
 	}
+	return csmap, sId, csId, nil
+}
+
+func CustomerMapToArr(csmap map[uint64]*CtrOrders) []*CtrOrders {
+	arr := make([]*CtrOrders, 0, len(csmap))
+	for _, cs := range csmap {
+		arr = append(arr, cs)
+	}
+	return arr
+}
+
+////////////////////////////////////////////////////////////
+////         sequential version data generator          ////
+////////////////////////////////////////////////////////////
+
+func (f *Faker) SequentialGen(m *MetaConfig, path string) {
+	products, venders, customers, cinps, pknowps, err := f.InitMetaData(m)
+	if err != nil {
+		log.ErrorLog(err)
+	}
+	SaveVenders(path, venders)
+	SaveProducts(path, products)
+	SaveCustomers(path, customers)
+	SaveCinps(path, cinps)
+	SavePknowps(path, pknowps)
+	csmap, oldsId, oldcsId, err := f.Purchase(products, customers, cinps)
+	if err != nil {
+		log.ErrorLog(err)
+	}
+	log.WriteLogf(infolog, "Generate %d order, %d total order", oldsId, oldcsId)
+	csmap, sId, csId, err := f.SpreadRepurchase(products, customers, pknowps, csmap, oldsId, oldcsId)
+	if err != nil {
+		log.ErrorLog(err)
+	}
+	log.WriteLogf(infolog, "Spread %d order, %d total order", sId-oldsId, csId-oldcsId)
+	CustomerMapToArr(csmap)
 }

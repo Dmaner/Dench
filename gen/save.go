@@ -35,6 +35,7 @@ func SaveVenders(savepath string, vs []*Vender) {
 	for _, data := range vs {
 		writeCsvSting(csvwriter, data.ToSlice())
 	}
+	log.WriteLog(infolog, "Sucessully save to", path)
 }
 
 func SaveCustomers(savepath string, cs []*Customer) {
@@ -54,6 +55,7 @@ func SaveCustomers(savepath string, cs []*Customer) {
 	for _, data := range cs {
 		writeCsvSting(csvwriter, data.ToSlice())
 	}
+	log.WriteLog(infolog, "Sucessully save to", path)
 }
 
 func SaveProducts(savepath string, ps []*Product) {
@@ -73,6 +75,7 @@ func SaveProducts(savepath string, ps []*Product) {
 	for _, data := range ps {
 		writeCsvSting(csvwriter, data.ToSlice())
 	}
+	log.WriteLog(infolog, "Sucessully save to", path)
 }
 
 func SaveCinps(savepath string, cps []*CinP) {
@@ -92,6 +95,7 @@ func SaveCinps(savepath string, cps []*CinP) {
 	for _, data := range cps {
 		writeCsvSting(csvwriter, data.ToSlice())
 	}
+	log.WriteLog(infolog, "Sucessully save to", path)
 }
 
 func SavePknowps(savepath string, pps []*PKonwP) {
@@ -111,4 +115,25 @@ func SavePknowps(savepath string, pps []*PKonwP) {
 	for _, data := range pps {
 		writeCsvSting(csvwriter, data.ToSlice())
 	}
+	log.WriteLog(infolog, "Sucessully save to", path)
+}
+
+func SaveFeedBacks(savepath string, fbs []*FeedBack) {
+	path := savepath + "/feedbacks.csv"
+	file, err := os.Create(path)
+	if err != nil {
+		log.ErrorLog(err)
+	}
+	defer file.Close()
+
+	csvwriter := csv.NewWriter(file)
+	defer csvwriter.Flush()
+	// write head
+	writeCsvSting(csvwriter, FeedBackHeader())
+
+	// write slice
+	for _, data := range fbs {
+		writeCsvSting(csvwriter, data.ToSlice())
+	}
+	log.WriteLog(infolog, "Sucessully save to", path)
 }

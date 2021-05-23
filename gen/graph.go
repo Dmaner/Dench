@@ -30,8 +30,8 @@ func CinpHeaders() []string {
 
 func PKnowPHeaders() []string {
 	return []string{
-		"ProductId",
-		"ProductId",
+		"CustomerId",
+		"CustomerId",
 		"Creationdate",
 	}
 }
@@ -40,7 +40,7 @@ func (cp *CinP) ToSlice() []string {
 	return []string{
 		strconv.FormatUint(cp.PersonId, 10),
 		strconv.FormatUint(cp.ProductId, 10),
-		strconv.FormatUint(cp.ProductId, 10),
+		strconv.FormatUint(uint64(cp.IntersetValue), 10),
 	}
 }
 
