@@ -257,15 +257,17 @@ func (f *Faker) Purchase(
 	products []*Product,
 	customers []*Customer,
 	cinps []*CinP,
-) (map[uint64]*CtrOrders, uint64, uint64, error) {
+) (map[uint64]*CtrOrders, []*FeedBack, uint64, uint64, error) {
 	var singleoId uint64 = 0 // single order id
 	var csorderId uint64 = 0 // a customer's orders' id
 	customermap := map[uint64]*CtrOrders{}
+	feedbacks := make([]*FeedBack, 0, len(cinps))
 
 	// for each interest people
 	for _, cinp := range cinps {
 		product := products[cinp.ProductId]
 		order := f.GenOrder(singleoId, cinp.PersonId, product)
+		feedbacks = append(feedbacks, order.Feedback)
 		if _, ok := customermap[cinp.PersonId]; !ok {
 			csos := ctrorders(csorderId, cinp.PersonId)
 			csos.Apppend(order)
@@ -277,7 +279,7 @@ func (f *Faker) Purchase(
 		singleoId++
 	}
 
-	return customermap, singleoId, csorderId, nil
+	return customermap, feedbacks, singleoId, csorderId, nil
 }
 
 /////////////////////////////////////////////////////////
@@ -302,7 +304,8 @@ func (f *Faker) SpreadRepurchase(
 	pknowps []*PKonwP,
 	csmap map[uint64]*CtrOrders,
 	sId, csId uint64,
-) (map[uint64]*CtrOrders, uint64, uint64, error) {
+) (map[uint64]*CtrOrders, []*FeedBack, uint64, uint64, error) {
+	feedbacks := make([]*FeedBack, 0, len(pknowps))
 	// for not interest people
 	for _, pp := range pknowps {
 
@@ -315,6 +318,7 @@ func (f *Faker) SpreadRepurchase(
 			// if recommend sucessfully
 			if f.Expand(recorder.Feedback) {
 				order := f.GenOrder(sId, pp.Personto, product)
+				feedbacks = append(feedbacks, order.Feedback)
 				if _, ok := csmap[pp.Personto]; !ok {
 					csos := ctrorders(csId, pp.Personto)
 					csos.Apppend(order)
@@ -327,7 +331,7 @@ func (f *Faker) SpreadRepurchase(
 			}
 		}
 	}
-	return csmap, sId, csId, nil
+	return csmap, feedbacks, sId, csId, nil
 }
 
 func CustomerMapToArr(csmap map[uint64]*CtrOrders) []*CtrOrders {
@@ -353,17 +357,19 @@ func (f *Faker) SequentialGen(m *MetaConfig, path string) {
 	SaveCustomers(path, customers)
 	SaveCinps(path, cinps)
 	SavePknowps(path, pknowps)
-	csmap, oldsId, oldcsId, err := f.Purchase(products, customers, cinps)
+	csmap, feedbacks1, oldsId, oldcsId, err := f.Purchase(products, customers, cinps)
 	if err != nil {
 		log.ErrorLog(err)
 	}
 	log.WriteLogf(infolog, "Generate %d order, %d total order", oldsId, oldcsId)
-	csmap, sId, csId, err := f.SpreadRepurchase(products, customers, pknowps, csmap, oldsId, oldcsId)
+	csmap, feedbacks2, sId, csId, err := f.SpreadRepurchase(products, customers, pknowps, csmap, oldsId, oldcsId)
 	if err != nil {
 		log.ErrorLog(err)
 	}
 	log.WriteLogf(infolog, "Spread %d order, %d total order", sId-oldsId, csId-oldcsId)
 	csarr := CustomerMapToArr(csmap)
+	feedbacks := append(feedbacks1, feedbacks2...)
+	SaveFeedBacks(path, feedbacks)
 	SaveCtrOrderJson(path, csarr)
 	SaveCtrOderXML(path, csarr)
 	log.WriteLog(infolog, "Sequential version run sucessfully")

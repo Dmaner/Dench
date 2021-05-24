@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	LOGPATH    = "log/"
-	TIMEFORMAT = "20200102"
-	LINEFEED   = "\r\n"
-	INFOLOG    = "[INFO]: "
-	ERRORLOG   = "[ERROR]: "
+	LOGPATH       = "log/"
+	TIMEFORMAT    = "20200102"
+	LOGTIMEFORMAT = "2006-01-02 15:04:05"
+	INFOLOG       = "INFO"
+	ERRORLOG      = "[ERROR]: "
 )
 
 var path = LOGPATH + time.Now().Format(TIMEFORMAT) + "/"
@@ -27,13 +27,14 @@ func WriteLog(fileName string, args ...interface{}) error {
 		return err
 	}
 	msg := fmt.Sprint(args...)
-	_, err = io.WriteString(f, INFOLOG+msg+LINEFEED)
+	str := fmt.Sprintf("[%s][%s]: %s\n", time.Now().Format(LOGTIMEFORMAT), INFOLOG, msg)
+	_, err = io.WriteString(f, str)
 
 	defer f.Close()
 	return err
 }
 
-func WriteLogf(fileName, TIMEFORMAT string, arg ...interface{}) error {
+func WriteLogf(fileName, format string, arg ...interface{}) error {
 	if !ifexist(path) {
 		return createdir(path)
 	}
@@ -41,9 +42,9 @@ func WriteLogf(fileName, TIMEFORMAT string, arg ...interface{}) error {
 	if err != nil {
 		return err
 	}
-	msg := fmt.Sprintf(TIMEFORMAT, arg...)
-
-	_, err = io.WriteString(f, INFOLOG+msg+LINEFEED)
+	msg := fmt.Sprintf(format, arg...)
+	str := fmt.Sprintf("[%s][%s]: %s\n", time.Now().Format(LOGTIMEFORMAT), INFOLOG, msg)
+	_, err = io.WriteString(f, str)
 
 	defer f.Close()
 	return err

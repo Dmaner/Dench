@@ -95,7 +95,7 @@ func (c *Customer) ToSlice() []string {
 		c.fristname,
 		c.lastname,
 		c.gender,
-		c.birthday.Format("2006-01-12"),
+		c.birthday.Format("2006-01-02"),
 		c.locationIP,
 		c.browserUsed,
 		c.place,

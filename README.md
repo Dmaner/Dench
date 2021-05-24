@@ -1,6 +1,14 @@
 # Dench
 
-D-bench设计
+D-bench
+
+## Environment
+
+> Ubuntu 20.04
+> python 3.8
+> go 1.16.4 linux/amd64
+> go get github.com/arangodb/go-driver
+> pip install pyarango
 
 ## Usage
 

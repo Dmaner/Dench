@@ -6,7 +6,7 @@ import (
 
 func main() {
 	var f *gen.Faker = gen.New(2)
-	var config *gen.MetaConfig = gen.MetaConfigGen(10)
+	var config *gen.MetaConfig = gen.MetaConfigGen(100)
 	// f.InitMetaData(config)
 	f.SequentialGen(config, "data")
 }
