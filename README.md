@@ -8,8 +8,8 @@ D-bench
 > python 3.8
 > go 1.16.4 linux/amd64
 > go get github.com/arangodb/go-driver
-> go get github.com/chrislusf/glow
-> go get github.com/chrislusf/glow/flow
+> go get github.com/chrislusf/gleam/flow
+> go get github.com/chrislusf/gleam/distributed/gleam
 > pip install pyarango
 
 ## Usage
