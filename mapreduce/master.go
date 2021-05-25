@@ -1,8 +1,14 @@
 package mapreduce
 
 import (
+	log "Dbench/util"
+	"bufio"
+	"encoding/json"
 	"fmt"
 	"net"
+	"net/rpc"
+	"os"
+	"sort"
 	"sync"
 )
 
@@ -25,29 +31,6 @@ type Master struct {
 	shutdown chan struct{}
 	l        net.Listener
 	stats    []int
-}
-
-// Register is an RPC method that is called by workers after they have started
-// up to report that they are ready to receive tasks.
-func (mr *Master) Register(args *RegisterArgs, _ *struct{}) error {
-	mr.Lock()
-	defer mr.Unlock()
-	debug("Register: worker %s\n", args.Worker)
-	mr.workers = append(mr.workers, args.Worker)
-	go func() {
-		mr.registerChannel <- args.Worker
-	}()
-	return nil
-}
-
-// newMaster initializes a new Map/Reduce Master
-func newMaster(master string) (mr *Master) {
-	mr = new(Master)
-	mr.address = master
-	mr.shutdown = make(chan struct{})
-	mr.registerChannel = make(chan string)
-	mr.doneChannel = make(chan bool)
-	return
 }
 
 // Sequential runs map and reduce tasks sequentially, waiting for each task to
@@ -117,6 +100,29 @@ func (mr *Master) run(jobName string, files []string, nreduce int,
 	mr.doneChannel <- true
 }
 
+// Register is an RPC method that is called by workers after they have started
+// up to report that they are ready to receive tasks.
+func (mr *Master) Register(args *RegisterArgs, _ *struct{}) error {
+	mr.Lock()
+	defer mr.Unlock()
+	log.WriteLog("Register: worker", args.Worker)
+	mr.workers = append(mr.workers, args.Worker)
+	go func() {
+		mr.registerChannel <- args.Worker
+	}()
+	return nil
+}
+
+// newMaster initializes a new Map/Reduce Master
+func newMaster(master string) (mr *Master) {
+	mr = new(Master)
+	mr.address = master
+	mr.shutdown = make(chan struct{})
+	mr.registerChannel = make(chan string)
+	mr.doneChannel = make(chan bool)
+	return
+}
+
 // Wait blocks until the currently scheduled work has completed.
 // This happens when all tasks have scheduled and completed, the final output
 // have been computed, and all workers have been shut down.
@@ -131,7 +137,7 @@ func (mr *Master) killWorkers() []int {
 	defer mr.Unlock()
 	ntasks := make([]int, 0, len(mr.workers))
 	for _, w := range mr.workers {
-		debug("Master: shutdown worker %s\n", w)
+		log.WriteLog("Master: shutdown worker ", w)
 		var reply ShutdownReply
 		ok := call(w, "Worker.Shutdown", new(struct{}), &reply)
 		if !ok {
@@ -141,4 +147,142 @@ func (mr *Master) killWorkers() []int {
 		}
 	}
 	return ntasks
+}
+
+// Shutdown is an RPC method that shuts down the Master's RPC server.
+func (mr *Master) Shutdown(_, _ *struct{}) error {
+	log.WriteLog("Shutdown: registration server")
+	close(mr.shutdown)
+	mr.l.Close() // causes the Accept to fail
+	return nil
+}
+
+// startRPCServer staarts the Master's RPC server. It continues accepting RPC
+// calls (Register in particular) for as long as the worker is alive.
+func (mr *Master) startRPCServer() {
+	rpcs := rpc.NewServer()
+	rpcs.Register(mr)
+	// os.Remove(mr.address) // only needed for "unix"
+	l, e := net.Listen("tcp", mr.address)
+	if e != nil {
+		log.ErrorLog(e)
+	}
+	mr.l = l
+
+	// now that we are listening on the master address, can fork off
+	// accepting connections to another thread.
+	go func() {
+	loop:
+		for {
+			select {
+			case <-mr.shutdown:
+				break loop
+			default:
+			}
+			conn, err := mr.l.Accept()
+			if err == nil {
+				go func() {
+					rpcs.ServeConn(conn)
+					conn.Close()
+				}()
+			} else {
+				log.ErrorLog(err)
+				break
+			}
+		}
+		log.WriteLog("RegistrationServer: done")
+	}()
+}
+
+// stopRPCServer stops the master RPC server.
+// This must be done through an RPC to avoid race conditions between the RPC
+// server thread and the current thread.
+func (mr *Master) stopRPCServer() {
+	var reply ShutdownReply
+	ok := call(mr.address, "Master.Shutdown", new(struct{}), &reply)
+	if !ok {
+		fmt.Printf("Cleanup: RPC %s error\n", mr.address)
+	}
+	log.WriteLog("cleanupRegistration: done")
+}
+
+// merge combines the results of the many reduce jobs into a single output file
+// XXX use merge sort
+func (mr *Master) merge() {
+	log.WriteLog("Merge phase")
+	kvs := make(map[string]string)
+	for i := 0; i < mr.nReduce; i++ {
+		p := mergeName(mr.jobName, i)
+		fmt.Printf("Merge: read %s\n", p)
+		file, err := os.Open(p)
+		if err != nil {
+			log.ErrorLog(err)
+		}
+		dec := json.NewDecoder(file)
+		for {
+			var kv KeyValue
+			err = dec.Decode(&kv)
+			if err != nil {
+				break
+			}
+			kvs[kv.Key] = kv.Value
+		}
+		file.Close()
+	}
+	var keys []string
+	for k := range kvs {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	file, err := os.Create("mrtmp." + mr.jobName)
+	if err != nil {
+		log.ErrorLog(err)
+	}
+	w := bufio.NewWriter(file)
+	for _, k := range keys {
+		fmt.Fprintf(w, "%s: %s\n", k, kvs[k])
+	}
+	w.Flush()
+	file.Close()
+}
+
+// schedule starts and waits for all tasks in the given phase (Map or Reduce).
+func (mr *Master) schedule(phase jobPhase) {
+	var ntasks int
+	var nios int // number of inputs (for reduce) or outputs (for map)
+	switch phase {
+	case mapPhase:
+		ntasks = len(mr.files)
+		nios = mr.nReduce
+	case reducePhase:
+		ntasks = mr.nReduce
+		nios = len(mr.files)
+	}
+
+	fmt.Printf("Schedule: %v %v tasks (%d I/Os)\n", ntasks, phase, nios)
+
+	//use go routing,worker rpc executor task,
+	done := make(chan bool)
+	for i := 0; i < ntasks; i++ {
+		go func(number int) {
+			args := DoTaskArgs{mr.jobName, mr.files[number], phase, number, nios}
+			var worker string
+			reply := new(struct{})
+			ok := false
+			for !ok {
+				worker = <-mr.registerChannel
+				ok = call(worker, "Worker.DoTask", args, reply)
+			}
+			done <- true
+			mr.registerChannel <- worker
+		}(i)
+
+	}
+
+	//wait for  all task is complate
+	for i := 0; i < ntasks; i++ {
+		<-done
+	}
+	fmt.Printf("Schedule: %v phase done\n", phase)
 }

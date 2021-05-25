@@ -1,8 +1,8 @@
 package mapreduce
 
 import (
+	log "Dbench/util"
 	"fmt"
-	"log"
 	"net"
 	"net/rpc"
 	"os"
@@ -41,7 +41,7 @@ func (wk *Worker) DoTask(arg *DoTaskArgs, _ *struct{}) error {
 // Shutdown is called by the master when all work has been completed.
 // We should respond with the number of tasks we have processed.
 func (wk *Worker) Shutdown(_ *struct{}, res *ShutdownReply) error {
-	debug("Shutdown %s\n", wk.name)
+	log.WriteLog("Shutdown ", wk.name)
 	wk.Lock()
 	defer wk.Unlock()
 	res.Ntasks = wk.nTasks
@@ -68,7 +68,7 @@ func RunWorker(
 	ReduceFunc func(string, []string) string,
 	nRPC int,
 ) {
-	debug("RunWorker %s\n", me)
+	log.WriteLog("RunWorker ", me)
 	wk := new(Worker)
 	wk.name = me
 	wk.Map = MapFunc
@@ -79,7 +79,7 @@ func RunWorker(
 	os.Remove(me) // only needed for "unix"
 	l, e := net.Listen("unix", me)
 	if e != nil {
-		log.Fatal("RunWorker: worker ", me, " error: ", e)
+		log.WriteLog("RunWorker: worker ", me, " error: ", e)
 	}
 	wk.l = l
 	wk.register(MasterAddress)
@@ -106,5 +106,5 @@ func RunWorker(
 		}
 	}
 	wk.l.Close()
-	debug("RunWorker %s exit\n", me)
+	log.WriteLog("RunWorker ", me, " exit")
 }

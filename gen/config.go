@@ -9,7 +9,7 @@ const infolog = "Info.log"
 const bytesPerWordEstimation = 6
 const venderperproduct = 100
 const perductperperson = 10
-const friendperperson = 2
+const friendperperson = 4
 const personintestpro = 10
 
 // order
@@ -41,8 +41,9 @@ type MetaConfig struct {
 }
 
 type Config struct {
-	m    *MetaConfig
-	path string
+	Meta         *MetaConfig
+	DataPath     string
+	DataBaseTest string
 }
 
 // Sample

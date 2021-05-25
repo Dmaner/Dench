@@ -52,7 +52,48 @@ arangoimp --file "data/feedbacks.csv" \
           --create-collection true \
           --overwrite true 
 
+# Json
+arangoimp --file "data/orders.json" \
+          --type json \
+          --translate "OrderId=_key" \
+          --collection "Order" \
+          --server.username $user \
+          --server.password $passwd \
+          --server.database $database \
+          --create-collection true \
+          --overwrite true 
+
+#Graph
+arangoimp --file "data/cinps.csv" \
+          --type csv \
+          --translate "CustomerId=_from" \
+          --from-collection-prefix Customer \
+          --translate "ProductId=_to" \
+          --to-collection-prefix Product \
+          --collection "CustomerInterestGraph" \
+          --server.username $user \
+          --server.password $passwd \
+          --server.database $database \
+          --create-collection true \
+          --create-collection-type edge \
+          --overwrite true 
+
+arangoimp --file "data/pknowps.csv" \
+          --type csv \
+          --translate "CustomerFromId=_from" \
+          --from-collection-prefix Customer \
+          --translate "CustomerToId=_to" \
+          --to-collection-prefix Customer \
+          --collection "KnowsGraph" \
+          --server.username $user \
+          --server.password $passwd \
+          --server.database $database \
+          --create-collection true \
+          --create-collection-type edge \
+          --overwrite true 
+
 end="$(date -u +%s)"
 cost="$(($end-$start))"
+
 echo "Data importing cost $cost sec"
 

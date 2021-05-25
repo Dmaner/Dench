@@ -30,8 +30,8 @@ func CinpHeaders() []string {
 
 func PKnowPHeaders() []string {
 	return []string{
-		"CustomerId",
-		"CustomerId",
+		"CustomerFromId",
+		"CustomerToId",
 		"Creationdate",
 	}
 }
