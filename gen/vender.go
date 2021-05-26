@@ -33,7 +33,7 @@ func VenderGetHeader() []string {
 // to slice
 func (v *Vender) ToSlice() []string {
 	return []string{
-		fmt.Sprintf("VE%d", v.VenderId),
+		fmt.Sprint(v.VenderId),
 		v.Country,
 		v.Company,
 	}
