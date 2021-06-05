@@ -4,13 +4,24 @@ D-bench
 
 ## Environment
 
-> Ubuntu 20.04
-> python 3.8
-> go 1.16.4 linux/amd64
-> go get github.com/arangodb/go-driver
-> go get github.com/chrislusf/gleam/flow
-> go get github.com/chrislusf/gleam/distributed/gleam
-> pip install pyarango
+install database
+
+> Arangodb 3.7.11 
+>   创建dman用户密码test 
+>   创建mydb数据库 
+> Mongodb 4.4.6 
+>   创建mydb 
+> 
+
+> Ubuntu 20.04 
+> python 3.8 
+> docker 20.10.7
+> go 1.16.4 linux/amd64 
+> go get github.com/arangodb/go-driver 
+> go get github.com/chrislusf/gleam/flow 
+> go get github.com/chrislusf/gleam/distributed/gleam 
+> pip install pyarango 
+
 
 ## Usage
 
@@ -40,12 +51,12 @@ D-bench
 
 ## Plans
 
-- [ ] Arangodb install & go api 
+- [x] Arangodb install & go api 
 - [x] Unibench paper read
-- [ ] gofakeit read & save data
+- [x] gofakeit read & save data
 - [ ] mapreduce
 - [ ] raft
-- [ ] ldbc generator read
+- [x] ldbc generator read
 
 ## Blogs & github
 
