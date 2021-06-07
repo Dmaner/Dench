@@ -4,16 +4,6 @@ D-bench
 
 ## Environment
 
-install database
-
-> Arangodb 3.7.11   
->   创建dman用户密码test   
->   创建mydb数据库   
-> Mongodb 4.4.6   
->   创建mydb   
-> OrientDB   
->   
-
 > Ubuntu 20.04  
 > python 3.8  
 > docker 20.10.7  
@@ -23,6 +13,17 @@ install database
 > go get github.com/chrislusf/gleam/distributed/gleam   
 > pip install pyarango   
 
+Database version
+
+- Arangodb 3.7.11   
+> 创建dman用户密码test   
+> 创建mydb数据库   
+
+- Mongodb 4.4.6   
+> 创建mydb   
+
+- OrientDB 3.0.4
+>   
 
 ## Usage
 
@@ -48,16 +49,16 @@ install database
 
 - [x] UniBench: A Benchmark for Multi-model Database Management Systems
 - [x] The LDBC Social Network Benchmark: Interactive Workload
-- [ ] TPC-H
+- [x] TPC-*
 
 ## Plans
 
 - [x] Arangodb install & go api 
 - [x] Unibench paper read
 - [x] gofakeit read & save data
-- [ ] mapreduce
-- [ ] raft
 - [x] ldbc generator read
+- [x] mapreduce
+- [ ] raft
 
 ## Blogs & github
 
