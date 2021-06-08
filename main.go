@@ -18,9 +18,11 @@ var version = flag.String("v", "distributed", "distributed|single")
 func main() {
 	var f *src.Faker = src.New(1)
 	flag.Parse()
+	workers := [2]string{"localhost:1077", "localhost:1078"}
 	var config = &src.Config{
 		Meta:     src.MetaConfigGen(*scale),
 		DataPath: *path,
+		Workers:  workers[:],
 	}
 	filename := *logfile + time.Now().Format("2006-01-02") + ".log"
 	LogFile, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0766)
@@ -30,7 +32,7 @@ func main() {
 	log.SetOutput(LogFile)
 	if *version == "distributed" {
 		fmt.Println("Using distributed version")
-		f.MapReduceGen(config.Meta, config.DataPath)
+		f.MapReduceGen(config)
 	} else {
 		fmt.Println("Using single version")
 		f.SequentialGen(config.Meta, config.DataPath)

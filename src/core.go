@@ -145,6 +145,44 @@ func (f *Faker) Purchase(
 	return customermap, feedbacks, singleoId, csorderId, nil
 }
 
+// step 2 purchase
+func (f *Faker) DisPurchase(
+	products []*Product,
+	customers []*Customer,
+	cinps []*CinP,
+	workers []string,
+) (map[uint64]*CtrOrders, []*FeedBack, uint64, uint64, error) {
+	var singleoId uint64 = 0 // single order id
+	var csorderId uint64 = 0 // a customer's orders' id
+	customermap := map[uint64]*CtrOrders{}
+	feedbacks := make([]*FeedBack, 0, len(cinps))
+
+	// multi-worker
+	setworker()
+
+	// for each interest people
+	for _, cinp := range cinps {
+		product := products[cinp.ProductId]
+		order := f.GenOrder(singleoId, cinp.PersonId, product)
+		feedbacks = append(feedbacks, order.Feedback)
+		if _, ok := customermap[cinp.PersonId]; !ok {
+			csos := ctrorders(csorderId, cinp.PersonId)
+			csos.Apppend(order)
+			customermap[cinp.PersonId] = csos
+			csorderId++
+		} else {
+			customermap[cinp.PersonId].Apppend(order)
+		}
+		singleoId++
+	}
+
+	log.Printf("Generate %d order, %d total order\n", singleoId, csorderId)
+	// merge worker
+	mergeworker()
+
+	return customermap, feedbacks, singleoId, csorderId, nil
+}
+
 /////////////////////////////////////////////////////////
 ////         third step  spread & repurchase         ////
 /////////////////////////////////////////////////////////
@@ -162,6 +200,42 @@ func (f *Faker) Expand(fb *FeedBack) bool {
 
 // step 3
 func (f *Faker) SpreadRepurchase(
+	products []*Product,
+	customers []*Customer,
+	pknowps []*PKonwP,
+	csmap map[uint64]*CtrOrders,
+	sId, csId uint64,
+) (map[uint64]*CtrOrders, []*FeedBack, uint64, uint64, error) {
+	feedbacks := make([]*FeedBack, 0, len(pknowps))
+	// for not interest people
+	for _, pp := range pknowps {
+
+		// interest people search not interested people
+		if cos, ok := csmap[pp.Personfrom]; ok {
+			// choice an product to recommend
+			recorder := cos.randrecommand(f.Rand)
+			product := recorder.Product
+
+			// if recommend sucessfully
+			if f.Expand(recorder.Feedback) {
+				order := f.GenOrder(sId, pp.Personto, product)
+				feedbacks = append(feedbacks, order.Feedback)
+				if _, ok := csmap[pp.Personto]; !ok {
+					csos := ctrorders(csId, pp.Personto)
+					csos.Apppend(order)
+					csmap[pp.Personto] = csos
+					csId++
+				} else {
+					csmap[pp.Personto].Apppend(order)
+				}
+				sId++
+			}
+		}
+	}
+	return csmap, feedbacks, sId, csId, nil
+}
+
+func (f *Faker) DisSpreadRepurchase(
 	products []*Product,
 	customers []*Customer,
 	pknowps []*PKonwP,
@@ -242,17 +316,31 @@ func (f *Faker) SequentialGen(m *MetaConfig, path string) {
 ////          mapreduce version data generator          ////
 ////////////////////////////////////////////////////////////
 
-func (f *Faker) MapReduceGen(m *MetaConfig, path string) {
-	products, venders, customers, cinps, pknowps, err := f.InitMetaData(m)
+func (f *Faker) MapReduceGen(c *Config) {
+	products, venders, customers, cinps, pknowps, err := f.InitMetaData(c.Meta)
 	if err != nil {
 		log.Fatal(err)
 	}
-	SaveVenders(path, venders)
-	SaveProducts(path, products)
-	SaveCustomers(path, customers)
-	SaveCinps(path, cinps)
-	SavePknowps(path, pknowps)
-
-	// split data
-
+	SaveVenders(c.DataPath, venders)
+	SaveProducts(c.DataPath, products)
+	SaveCustomers(c.DataPath, customers)
+	SaveCinps(c.DataPath, cinps)
+	SavePknowps(c.DataPath, pknowps)
+	csmap, feedbacks1, oldsId, oldcsId, err := f.DisPurchase(products, customers, cinps, c.Workers)
+	if err != nil {
+		log.Fatal(err)
+	}
+	setworker()
+	csmap, feedbacks2, sId, csId, err := f.DisSpreadRepurchase(products, customers, pknowps, csmap, oldsId, oldcsId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Spread %d order, %d total order\n", sId-oldsId, csId-oldcsId)
+	mergeworker()
+	csarr := CustomerMapToArr(csmap)
+	feedbacks := append(feedbacks1, feedbacks2...)
+	SaveFeedBacks(c.DataPath, feedbacks)
+	SaveCtrOrderJson(c.DataPath, csarr)
+	SaveCtrOderXML(c.DataPath, csarr)
+	log.Println("MapReduce version run sucessfully")
 }

@@ -2,6 +2,7 @@ package src
 
 import (
 	"bytes"
+	"log"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -136,4 +137,14 @@ func (f *Faker) GenCinP(pe, pr uint64) *CinP {
 // Person know person
 func (f *Faker) GenPKnowP(pf, pt uint64) *PKonwP {
 	return pknowp(f.Rand, pf, pt)
+}
+
+// set worker
+func setworker() {
+	log.SetPrefix("[Worker]")
+}
+
+// merge worker
+func mergeworker() {
+	log.SetPrefix("")
 }

@@ -6,6 +6,7 @@ const venderperproduct = 100
 const perductperperson = 10
 const friendperperson = 4
 const personintestpro = 10
+const tsperpackage = 500
 
 // order
 const beginyear = 2008
@@ -28,16 +29,18 @@ func rangeint(a, b int) *RangeInt {
 }
 
 type MetaConfig struct {
-	rcustomers *RangeInt
-	rproducts  *RangeInt
-	rvenders   *RangeInt
-	ncinp      int
-	npknowp    int
+	rcustomers *RangeInt // customers generation sequence
+	rproducts  *RangeInt // products generation sequence
+	rvenders   *RangeInt // vendors generation sequence
+	ncinp      int       // num of transaction
+	npknowp    int       // relationship
+	tscount    int       // how many transaction for each package
 }
 
 type Config struct {
 	Meta     *MetaConfig
 	DataPath string
+	Workers  []string // multi-worker
 }
 
 // Sample
@@ -53,5 +56,6 @@ func MetaConfigGen(n int) *MetaConfig {
 		rvenders:   rangeint(0, numofv),
 		ncinp:      numofcinp,
 		npknowp:    numofpkp,
+		tscount:    numofc / tsperpackage,
 	}
 }
