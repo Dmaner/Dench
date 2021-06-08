@@ -12,6 +12,8 @@ D-bench
 > go get github.com/chrislusf/gleam/flow   
 > go get github.com/chrislusf/gleam/distributed/gleam   
 > pip install pyarango   
+> pip install pyorient
+> pip install pyagens
 
 Database version
 
@@ -20,30 +22,33 @@ Database version
 > 创建mydb数据库   
 
 - Mongodb 4.4.6   
-> 创建mydb   
+> 创建dman用户密码test   
+> 创建mydb数据库   
 
 - OrientDB 3.0.4
->   
+> 创建dman用户密码test   
+> 创建mydb数据库   
+
+- AgensGraph
+> 创建dman用户密码test   
+> 创建mydb数据库   
 
 ## Usage
 
-### Step 1. 数据生成
+1. 清除历史数据和日志
+> make clean
 
-- 第一阶段
-  - 采用[LDBC-SNB](https://github.com/ldbc/ldbc_snb_datagen/tree/stable)生成图数据和兴趣矩阵
-  - 随机生成产品数据
-- 第二阶段
-  - 随机生成用户和供应商
-  - 随机生成兴趣用户和非兴趣用户
-  - 遍历兴趣用户调用Purchase(product, person), 按兴趣概率设定购买量
-  - 返回社交网络(graph), 供应商和消费者(relation), 订单和产品(json), 发票(XML), 产品评价(KV)
-- 第三阶段
-  - 对非兴趣用户对周围认识度较高的人用贝叶斯模型计算购买大于阈值的产品量和购买数
-  - re-purchase()
 
-### Step 2. 工作负载生成
+2. 生成数据
+> make 
 
-- 主要采用Unibench的工作负载
+3. 导入数据
+> make import (default arangodb)
+
+4. 测试数据库
+
+> python database/[Arangodb.py|AgensGraph.py|Oriendb.py] [all|Q[1-7]]
+
 
 ## Paper read
 

@@ -4,7 +4,7 @@ from pprint import pprint
 from functools import wraps
 from time import time
 import pyorient
-
+import sys
 
 def timerec(funcname: str):
     def decorator(func):
@@ -94,10 +94,27 @@ if __name__ == "__main__":
     db = conn["mydb"]
     w = WorkLoadAgensGraph(db)
     show = False
-    w.Q1(10, show)
-    w.Q2(9908, show)
-    w.Q3(9908, show)
-    w.Q4(show)
-    w.Q5(10, 290, show)
-    w.Q6(1, 10, show)
-    w.Q7('China', '1900', '2020', show)
+    flag = sys.argv[1]
+    if flag == "all":
+        w.Q1(10, show)
+        w.Q2(9908, show)
+        w.Q3(9908, show)
+        w.Q4(show)
+        w.Q5(10, 290, show)
+        w.Q6(1, 10, show)
+        w.Q7('China', '1900', '2020', show)
+    show = True
+    if flag == "Q1":
+        w.Q1(10, show)
+    elif flag == "Q2":
+        w.Q2(9908, show)
+    elif flag == "Q3":
+        w.Q3(9908, show)
+    elif flag == "Q4":
+        w.Q4(show)
+    elif flag == "Q5":
+        w.Q5(10, 290, show)
+    elif flag == "Q6":
+        w.Q6(1, 10, show)
+    elif flag == "Q7":
+        w.Q7('China', '1900', '2020', show)
